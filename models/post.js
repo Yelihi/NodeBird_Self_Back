@@ -16,7 +16,11 @@ module.exports = (sequeliz, DataTypes) => {
   );
   Post.associate = (db) => {
     db.Post.belongsTo(db.User); // 어떤 사용자에게 속해있다.
-    db.Post.hasMany(db.Comment); // 어떤 사용자에게 속해있다.
+    db.Post.hasMany(db.Comment);
+    db.Post.hasMany(db.Image); //
+    db.Post.belongsToMany(db.Hashtag, { through: "PostHashtag" }); // 다대다
+    db.Post.belongsToMany(db.User, { through: "Like", as: "Likers" });
+    db.Post.belongsTo(db.Post, { as: "retweet" });
   };
 
   return Post;

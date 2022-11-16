@@ -4,7 +4,7 @@
   "description": "노드버드 백엔드",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon app"
   },
   "author": "wonik",
   "license": "ISC",
@@ -13,5 +13,8 @@
     "mysql2": "^2.3.3",
     "sequelize": "^6.25.6",
     "sequelize-cli": "^6.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }

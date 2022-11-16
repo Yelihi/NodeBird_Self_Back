@@ -10,6 +10,13 @@ const sequelize = new Sequelize(
   config
 );
 
+db.Comment = require("./comment")(sequelize, Sequelize);
+db.Hashtag = require("./hashtag")(sequelize, Sequelize);
+db.Image = require("./image")(sequelize, Sequelize);
+db.Post = require("./post")(sequelize, Sequelize);
+db.User = require("./user")(sequelize, Sequelize);
+
+// associtate 부분을 실행시켜주는 부분
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
