@@ -1,5 +1,5 @@
-module.exports = (sequeliz, DataTypes) => {
-  const Image = sequeliz.define(
+module.exports = (sequelize, DataTypes) => {
+  const Image = sequelize.define(
     // User 는 모델이름. 이게 자동으로 소문자, 복수가 되서 mysql 에 저장된다.
     "Image", // id 는 기본적으로 들어있다.
     {

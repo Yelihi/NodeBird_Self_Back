@@ -38,6 +38,11 @@ app.use(
     saveUninitialized: false,
     resave: false,
     secret: process.env.COOKIE_SECRET, // 치환되서 들어감
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      domain: "localhost:3000",
+    },
   })
 );
 app.use(passport.initialize());
