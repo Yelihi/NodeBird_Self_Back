@@ -25,6 +25,7 @@ db.sequelize
 app.use(
   cors({
     origin: true,
+    credentials: true, // 쿠키를 서버에 전달하기 위해서 꼭 필요하다.
   })
 );
 app.use(express.json());
@@ -38,43 +39,16 @@ app.use(
     saveUninitialized: false,
     resave: false,
     secret: process.env.COOKIE_SECRET, // 치환되서 들어감
-    cookie: {
-      httpOnly: true,
-      secure: false,
-      domain: "localhost:3000",
-    },
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get("/", (req, res) => {
-  res.send("hello express");
-});
-
-app.get("/api", (req, res) => {
-  res.send("hello api");
-});
-
-app.get("/post", (req, res) => {
-  res.json([
-    {
-      id: 1,
-      content: "hello",
-    },
-    {
-      id: 1,
-      content: "hello",
-    },
-    {
-      id: 1,
-      content: "hello",
-    },
-  ]);
-});
-
 app.use("/post", postRouter);
 app.use("/user", userRouter);
+
+// 직접 에러를 특별하게 처리하고 싶다면
+// app.use((err, req, res, next) => {})
 
 app.listen(3065, () => {
   console.log("서버 실행 중!");

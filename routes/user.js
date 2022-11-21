@@ -4,7 +4,9 @@ const passport = require("passport");
 const { User, Post } = require("../models");
 const router = express.Router();
 
-router.post("/login", (req, res, next) => {
+const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
+
+router.post("/login", isNotLoggedIn, (req, res, next) => {
   // 이러한 패턴을 미들웨어 확장이라고 한다. 원래 passport 는 res,req, next 를 쓸수 없는 미들웨어인데 사용가능하게끔 확장함.
   passport.authenticate("local", (err, user, info) => {
     // 매개변수 이름은 마음대로
@@ -50,13 +52,17 @@ router.post("/login", (req, res, next) => {
 });
 // Post / user/login
 
-router.post("/logout", (req, res) => {
-  req.logout();
-  req.session.destroy();
-  res.send("ok");
+router.post("/logout", isLoggedIn, (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    req.session.destroy();
+    res.send("ok");
+  });
 });
 
-router.post("/", async (req, res) => {
+router.post("/", isNotLoggedIn, async (req, res) => {
   try {
     const exUser = await User.findOne({
       // 조건 넣어주기
