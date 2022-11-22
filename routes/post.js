@@ -9,9 +9,10 @@ const router = express.Router();
 
 router.post("/", isLoggedIn, async (req, res, next) => {
   try {
+    console.log("req.user.id", req.user.id);
     const post = await Post.create({
       content: req.body.content,
-      userId: req.user.id, // 이거 로그인 할 때, deserlialize 를 통해서 아이디만 들고 있다가, router 에 접근 시 그 전에 이걸 실행해서 사용자 데이터 복구해서 req.user 에 넣어놓는다고 하였다.
+      UserId: req.user.id, // 이거 로그인 할 때, deserlialize 를 통해서 아이디만 들고 있다가, router 에 접근 시 그 전에 이걸 실행해서 사용자 데이터 복구해서 req.user 에 넣어놓는다고 하였다.
     });
     const fullPost = await Post.findOne({
       where: { id: post.id },
@@ -48,7 +49,7 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
     const comment = await Comment.create({
       content: req.body.content,
       postId: req.params.postId,
-      userId: req.body.userId,
+      UserId: req.body.userId,
     });
     res.status(201).json(comment);
   } catch (err) {

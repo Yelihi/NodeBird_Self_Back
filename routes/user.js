@@ -6,6 +6,38 @@ const router = express.Router();
 
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
+router.get("/", async (req, res, next) => {
+  try {
+    if (req.user) {
+      const user = await User.findOne({
+        where: { id: req.user.id },
+        attributes: {
+          exclude: ["password"],
+        },
+        include: [
+          {
+            model: Post,
+          },
+          {
+            model: User,
+            as: "Followings",
+          },
+          {
+            model: User,
+            as: "Followers",
+          },
+        ],
+      });
+      res.status(200).json(user);
+    } else {
+      res.status(200).json(null);
+    }
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 router.post("/login", isNotLoggedIn, (req, res, next) => {
   // 이러한 패턴을 미들웨어 확장이라고 한다. 원래 passport 는 res,req, next 를 쓸수 없는 미들웨어인데 사용가능하게끔 확장함.
   passport.authenticate("local", (err, user, info) => {
@@ -35,14 +67,17 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
         include: [
           {
             model: Post,
+            attributes: ["id"],
           },
           {
             model: User,
             as: "Followings",
+            attributes: ["id"],
           },
           {
             model: User,
             as: "Followers",
+            attributes: ["id"],
           },
         ],
       });
