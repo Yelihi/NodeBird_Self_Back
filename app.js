@@ -3,9 +3,13 @@ const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
-const postRouter = require("./routes/post");
+const morgan = require("morgan");
+
+const postRouter = require("./routes/post"); // 게시글 하나 작성, 댓글 하나 작성, 하나 지우기 등 단수
 const userRouter = require("./routes/user");
+const postsRouter = require("./routes/posts"); // 게시글 여러개를 가져오기
 const db = require("./models");
+
 const passport = require("passport");
 const passportConfig = require("./passport");
 
@@ -21,6 +25,7 @@ db.sequelize
   })
   .catch(console.error);
 
+app.use(morgan("dev"));
 // 밑 메서드 및 라우터 위에 이거 적어주자.
 app.use(
   cors({
@@ -46,6 +51,7 @@ app.use(passport.session());
 
 app.use("/post", postRouter);
 app.use("/user", userRouter);
+app.use("/posts", postsRouter);
 
 // 직접 에러를 특별하게 처리하고 싶다면
 // app.use((err, req, res, next) => {})
