@@ -1,4 +1,7 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs"); // 파일 시스템을 조작할 수 있는 fs 모듈
 
 const { Post, Image, User } = require("../models");
 const { Comment } = require("../models");
@@ -7,12 +10,49 @@ const { isLoggedIn } = require("./middlewares");
 
 const router = express.Router();
 
-router.post("/", isLoggedIn, async (req, res, next) => {
+try {
+  fs.accessSync("uploads");
+} catch (err) {
+  console.log("upload 폴더가 없으니 생산합니다");
+  fs.mkdirSync("uploads");
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, done) {
+      done(null, "uploads");
+    },
+    filename(req, file, done) {
+      // 원익.jpg
+      const ext = path.extname(file.originalname); // 확장자만 추출
+      const basename = path.basename(file.originalname, ext); //원익
+      done(null, basename + "_" + new Date().getTime() + ext); // 원익2341.jpg
+    },
+  }),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20mb
+  // 프론트에서 클라우드로 바로 올릴수 있도록 하는게 맞는데, 일단은 이렇게 처리하자
+});
+
+router.post("/", isLoggedIn, upload.none(), async (req, res, next) => {
   try {
     const post = await Post.create({
       content: req.body.content,
       UserId: req.user.id, // 이거 로그인 할 때, deserlialize 를 통해서 아이디만 들고 있다가, router 에 접근 시 그 전에 이걸 실행해서 사용자 데이터 복구해서 req.user 에 넣어놓는다고 하였다.
     });
+    if (req.body.image) {
+      // req.body 안에 존재한다.
+      if (Array.isArray(req.body.image)) {
+        // 배열이라면 image: [123.png, dkfkd.png, ...] 이런식으로 오게된다.
+        const images = await Promise.all(
+          req.body.image.map((image) => Image.create({ src: image })) // 시퀄라이즈 작업은 비동기이기에 map 으로 돌린것이니 여러개. 따라서 promise.all
+        ); // 직접 주소를 넣어준다. 사진 자체는 db 에 넣지는 않는다.
+        await post.addImages(images);
+      } else {
+        // 1개라면 image: 123.png
+        const image = await Image.create({ src: req.body.image });
+        await post.addImages(image);
+      }
+    }
     const fullPost = await Post.findOne({
       where: { id: post.id },
       include: [
@@ -77,6 +117,16 @@ router.post("/:postId/comment", isLoggedIn, async (req, res, next) => {
     next(err);
   }
 });
+
+router.post(
+  "/images",
+  isLoggedIn,
+  upload.array("image"),
+  async (req, res, next) => {
+    console.log(req.files);
+    res.json(req.files.map((v) => v.filename));
+  }
+);
 
 router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
   // PATCH /post/1/like

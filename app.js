@@ -4,6 +4,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
+const path = require("path");
 
 const postRouter = require("./routes/post"); // 게시글 하나 작성, 댓글 하나 작성, 하나 지우기 등 단수
 const userRouter = require("./routes/user");
@@ -33,6 +34,8 @@ app.use(
     credentials: true, // 쿠키를 서버에 전달하기 위해서 꼭 필요하다.
   })
 );
+app.use("/", express.static(path.join(__dirname, "uploads"))); // uploads 폴더를 추가해준다.
+// '/' 는 localhost:3065/ 이다. 프론트에서 이 주소로 접근할 수 있다.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // 세션과 쿠키 설정해주기. 로그인했다 하더라도 브라우저와 백엔드 서버가 다른 포트를 사용하니, 브라우저에다가 로그인 정보를 보내준다
