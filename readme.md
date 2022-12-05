@@ -50,177 +50,357 @@ express 와 시퀄라이즈를 활용하여 mySQL 과 연동하여, 데이터를
 <br>
 
 <details>
-<summary><b>ESLint 초기 설정</b></summary>
+<summary><b>node.js & express</b></summary>
 <div markdown="1">
 <br />
 
-> **ESLint**
+> **Node.js**
 
 <p align="justify">
-ESlint 는 Javascript, JSX 의 정적 분석 도구입니다. 코드를 분석해 문법적인 오류나 안티 패턴을 찾아주고 일관된 코드 스타일로 작성하도록 도와줍니다.<br />
-사람들은 저마다의 코딩 스타일이 있기 때문에, 이를 하나의 코딩 스타일로 바꿔주는 역할을 하게 됩니다.
-<br /> ESlint 에는 Shareable Configs 라는 기능이 제공되는데, 이를 이용하면 누군가 만들어 놓은 ESLint 설정을 활용할 수 있습니다. <br />
-아래와 같이 초기 설치를 해주겠습니다.
+Node.js 에는 웹서버가 내장되어 있기 때문에 코드를 통해 서버를 만들고 실행할 수 있습니다.
 </p>
-<br />
-
-```
-npm i eslint -D
-npm i eslint-plugin-import -D
-npm i eslint-plugin-react -D
-npm i eslint-plugin-react-hooks -D
-npm i eslint-config-airbnb@latest -D
-npm i babel-eslint -D
-```
-
 <br />
 
 ```js
-{
-  "parser": "babel-eslint", // babel 이 해석해서 최신 문법도 에러 발생 안함
-  // "parser" : "@typescript-eslint/parser"
-  // 전반적인 Javascript 언어 옵션을 설정
-  "parserOptions": {
-    "ecmaVersion": 2020, // 사용할 ECMAScript 버전을 설정
-    "sourceType": "module", //parser의 export 형식을 설정
-    "ecmaFeatures": { // ECMAScript의 언어 확장 기능을 설정
-      "jsx": true // JSX 사용 여부
-    }
-  },
-  "env": {
-    "browser": true,
-    "node": true,
-    "es6": true
-  },
-  "extends": ["airbnb"], // 패기지를 설치하여 설치한 설정을 적용하고자 할 때 extends 에 넣어준다.
-  // 플러그인 추가
-  "plugins": ["import", "react-hooks"],
-  // 사용할 규칙
-  "rules": {
-    "jsx-a11y/label-has-associated-control": "off",
-    "jsx-a11y/anchor-is-valid": "off",
-    "no-console": "off", // console.log 등의 호출을 설정 (지금은 클라이언트에 여전히 전달 가능). node.js 에서는 error 로 하는게 유리.
-    "no-underscore-dangle": "off", // 식별자에 붙은 _를 허용할지 안할지를 설정한다. 중요한건 식별자에 매달린!
-    "react/forbid-prop-types": "off",
-    "react/jsx-filename-extension": "off",
-    "react/jsx-one-expression-per-line": "off",
-    "object-curly-newline": "off", // {} 내 줄바꿈이 필수인지 아닌지에 대한 옵션 처리. 지금은 그냥 꺼버렸다.
-    "linebreak-style": "off", // 일관된 줄 바꿈 스타일 적용 설정 ('unix', 'window')
-    "no-param-reassign": "off" // 전달된 매개변수에 값을 재할당 하는것을 막아주는 설정
-  }
-}
+// 서버를 만드는 모듈 http 를 불러옵니다.
+const http = require("http");
+// 서버를 만드는 메서드를 활용해서 서버를 생성합니다.
+const server = http.createServer((req, res) => {
+  console.log(req.url, req.method); //request, response
+  res.end("hello node");
+});
+// 3065 포트에 연결해줍니다. 연결이 되었다면 콘솔창에 찍히게 됩니다.
+server.listen(3065, () => {
+  console.log("서버 실행 중");
+});
 ```
 
-> 엄격한 스타일 적용을 위해 airbnb 패키지로 설정하였고, 꺼두고 싶은 규칙들을 off 로 설정하였습니다. plugin 에는 react-hooks 를 추가 설정하였습니다.
-
-<h3> 기본 개념 </h3>
 <p align="justify">
-eslintrc. 파일을 생성 후 위와 같이 셋팅을 해줍니다.  
-<br /> ESlint 설정에는 크게 4가지 정도로 구분할 수 있습니다.
-</p>
-
-- 환경(env) : 코드가 돌아가는 환경을 설정합니다.
-- 전역변수(Globals) : 추가로 사용할 전역변수를 정의할 수 있습니다.
-- 규칙(Rules) : 룰의 활성화와 에러들의 수준을 설정합니다.
-- 플러그인(plugin) : 위 규칙이나 환경,설정들을 한데 모아둔 집합같은 느낌입니다.
-  <br />
-
-<p align="justify">
-규칙의 경우 규칙 이름과 이에 대한 설정값으로 'off: 끔', 'warn: 경고', 'error: 오류' 3가지로 나뉩니다. <br />
-만일 사용하려는 extends 와 plugin 에서 설정해둔 규칙을 수정하고 싶다면, rules 에서 직접 수정하면 됩니다.
+Node.js 모듈 시스템을 구축하고 있습니다. http 모둘을 가져오면서 서버를 실행시킬 수 있습니다. <br/><br />
+위 createServer 메서드의 req, res 는 각각 request, response 를 의미합니다. request 는 요청을 담당하는데, 서버는 이러한 요청에 반응을 하게 됩니다. 그리고 그 결과를 response 에 담아서 돌려줍니다.
+<br />요청에 대한 응답으로 어떠한 정보를 보내고 싶다면 이 response 에 담아서 전달하면 됩니다. 위 "hello node" 역시 메세지를 응답에 담아서 보내는 것입니다. 메세지 뿐 아니라 JSON, AJAX, Image 등 이러한 정보들을 담아서 전달할 수 있습니다.<br/></br/>
+요청 -> 서버처리 -> 응답 으로 이어지는 흐름이고, 또한 하나의 요청은 하나의 응답으로 대응되어야 합니다.<br /><br />request, response 에는 header 부분과 body 부분이 있는데, header 부분에는 종류나 크기,캐시 여부 등등이 담겨있으며, body 에 실제로 주고받고자 하는 내용이 담겨져 있습니다. 
 </p>
 <br />
 
-- 참고로 prettier 와 설정 충돌을 막고 싶다면, `eslint-config-prettier`
-- html 역시 eslint 로 문법 설정을 하고 싶다면, `eslint-plugin-html`
+> **Express**
+
+<p align="justify">
+express 는 서버 구성을 도와주는 프레임워크입니다. 범용으로 자주 사용되는 프레임워크입니다.
+</p>
+
+```
+npm i express
+```
+
+<p align="justify">
+http 모듈은 express 에서 내부적으로 처리하기 때문에 사용하지 않아도 되며, `const app = express()` 를 사용해서 만든 Express app 객체로 모든 서버의 일을 처리합니다. 마지막에는 `app.listen()` 을 통해서 요청을 대기중입니다.
+</p>
+
+```js
+// express 를 가져옵니다.
+const express = require("express");
+
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("hello express");
+});
+
+app.get("/api", (req, res) => {
+  res.send("hello api");
+});
+
+app.get("/api/post", (req, res) => {
+  res.json([
+    {
+      id: 1,
+      content: "hello",
+    },
+    {
+      id: 1,
+      content: "hello",
+    },
+    {
+      id: 1,
+      content: "hello",
+    },
+  ]);
+});
+
+app.post("/api/post", (req, res) => {
+  res.json({ id: 1, content: "hello" });
+});
+
+app.delete("/api/post", (req, res) => {
+  res.json({ id: 1 });
+});
+
+app.listen(3065, () => {
+  console.log("서버 실행 중");
+});
+```
+
+  <br />
+
+<p align="justify">
+위 코드는 express 의 라우팅 부분에 대한 예시 입니다. 메서드에 대해 간단하게 요약하자면, 
+</p>
+
+- `app.get` : 가져오기
+- `app.post` : 생성하기
+- `app.put` : 전체 수정
+- `app.delete` : 제거하기
+- `app.patch` : 부분 수정
+- `app.option` : 데이터를 보낼 수 있음을 암시
+- `app.head` : 헤더만 가져오기
+
+<p align="justify">
+메서드의 경우 백엔드 개발자와 프론트엔드 개발자 간 협의에 의해 정하면 됩니다.<br /><br />
+또한 app 상태내에서 너무 코드가 길어질 수 있으니, 라우터를 분리할 수 있습니다.
+</p>
+
+```js
+const postRouter = require("./routes/post");
+
+// 생략
+
+app.use("/post", postRouter); // 공통된 주소를 빼줍니다.
+```
+
+```js
+const express = require("express");
+// router 를 설정해줍니다.
+const router = express();
+
+router.post("/", (req, res) => {
+  res.json({ id: 1, content: "hello" });
+});
+
+router.delete("/", (req, res) => {
+  res.json({ id: 1 });
+});
+// 모듈로서 export 시킵니다.
+module.exports = router;
+```
 
 </div>
 </details>
 
 <details>
-<summary><b>Next.js 초기 설정</b></summary>
+<summary><b>데이터베이스 설정</b></summary>
 <div markdown="1">
 <br />
 
-> **Next.js@9**
+> **Sequelize**
 
 <p align="justify">
-Next.js는 리엑트로 구현 시 CSR 방식으로 인한 SEO(검색 최적화) 문제점을 해소시켜주는 리엑트 프레임워크입니다.<br />
-Next.js 를 활용하여 SSR(Server Side Rendering) 구현이 가능해집니다. 
-<br />CSR 과 SSR 에 관해서는 아래 링크를 참고해주세요<br />
+sequelize 는 MySQL 자바스크립트를 통해 관리할 수 있도록 도와줍니다.<br />
+아래와 같이 설치 후 초기 셋팅을 하겠습니다.
 </p>
 <br />
 
-[블로그 참고](https://rock7246.tistory.com/23)
-
 ```
-npm i next@9
+npm i sequelize sequelize-cli mysql2
 ```
 
-<br />
+- mysql2 는 node 와 database 를 연결시켜주는 드라이버 같은 역할을 하게 됩니다.
 
-> **getServerSideProps**
+```
+npx sequelize init
+```
 
-<p align="justify">
-처음 화면이 렌더링 될 때, 기존 CSR 방식과 달리 SSR 의 경우 서버에서 데이터까지 함께 받아오기 때문에 순차적으로 화면이 나타난다기 보단, 첫 화면에 같이 데이터까지 렌더링 되도록 설정할 수 있습니다. <br />
-우선 가장 먼저 첫 화면에서(Home) 데이터를 받아오는 dispatch 부분을 수정해주어야 합니다.
-</p>
+- config.json
+
+```json
+{
+  "development": {
+    "username": "root",
+    "password": "dnjsdlr1",
+    "database": "react-nodebird",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": "dnjsdlr1",
+    "database": "react-nodebird",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "dnjsdlr1",
+    "database": "react-nodebird",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
+```
+
+- 비밀번호를 입력해주고 데이터베이스의 이름을 정해주면 됩니다.
+- 그리고 기본 폴더들이 설치되었을 텐데, 이 폴더 중 model/index.js 를 셋팅해주어야 합니다.
 
 ```js
-import { END } from "redux-saga";
-// 생략
+// 시퀄라이즈를 불러오고
+const Sequelize = require("sequelize");
+// 기본값이 development 이며 셋팅을 했다면 앞에것으로 하겟습니다.
+const env = process.env.NODE_ENV || "development";
+// config.json 에서 [env] 에 따라 development, test, production 중에서 가져옵니다.
+const config = require("../config/config.json")[env];
+const db = {};
 
-import wrapper from "../store/configureStore";
+// 데이터를 가져옵니다.
+const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
-const Home = () => {
-  // 생략
-};
-
-// 이게 있으면 화면그리기 전에 먼저 실행을 합니다.
-export const getServerSideProps = wrapper.getServerSideProps(async (context) => {
-  console.log(context);
-  context.store.dispatch({
-    type: LOAD_USER_REQUEST,
-  });
-  context.store.dispatch({
-    type: LOAD_POSTS_REQUEST,
-  });
-  // success 까지 기다리기 위해서 하는 조치
-  context.store.dispatch(END);
-  //store.sagaTask 는 기존에 configStore.js 에서 처리합니다
-  await context.store.sagaTask.toPromise();
+// 이 부분은 추후 데이터간 일대다, 다대다 관계 시 연결된 부분들을 같이 연관시켜서 가져오게 됩니다.
+// 반복문을 사용해서 일괄 처리해준것입니다.
+Object.keys(db).forEach((modelName) => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
 });
 
-export default Home;
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
 ```
 
-- 위 코드처럼 처리를 해주면 됩니다. 참고로 context.store.dispatch(END)를 해주지 않으면 요청이 진행된 상태에서 화면을 랜더링 하게 되어, 데이터가 들어오질 않습니다.
-- saga가 실행될 수 있도록 await 를 통해 처리해줍니다.
+<br />
+
+> **데이터베이스 사용자 설계**
 
 <p align="justify">
-다만 처음 데이터가 들어올 때, reducers/index 의 rootReducer 의 구조를 변경해주어야 합니다.
+기본적으로 셋팅이 완료되었다면, 실제로 데이터들이 들어갈 데이터베이스를 설계하여야 합니다. models 폴더 안 생성하는 파일 이름이 곧 데이터테이블의 이름이 됩니다. 트위터에서 사용될 데이터베이스를 생각하여 파일을 생성합니다. 이 중 예를 들어 `User` 데이터를 살펴보겠습니다.
 </p>
 
 ```js
-const rootReducer = (state, action) => {
-  switch (action.type) {
-    case HYDRATE:
-      console.log("HYDRATE", action);
-      return action.payload;
-    default: {
-      const combineReducer = combineReducers({
-        user,
-        post,
-      });
-      return combineReducer(state, action);
-    }
+const DataTypes = require("sequelize");
+const { Model } = DataTypes;
+
+// User 가 모델 이름입니다.
+module.exports = class User extends Model {
+  static init(sequelize) {
+    return super.init(
+      {
+        email: {
+          // 들어갈 데이터를 설정해줍니다.
+          type: DataTypes.STRING(30), // 30글자 이하 STRING, TEXT, BOOLEAN, INTEGER, FLOAT, DATETIME
+          allowNull: false, // 필수
+          unique: true, // 중복 안되게
+        },
+        nickname: {
+          type: DataTypes.STRING(30), // 30글자 이하
+          allowNull: false, // 필수
+        },
+        password: {
+          type: DataTypes.STRING(100), // 30글자 이하
+          allowNull: false, // 필수
+        },
+      },
+      {
+        // 유저 모델에 대한 셋팅입니다.
+        modelName: "User", // 이부분은 추후 프론트 엔드와의 연결 시 잘 맞춰주어야 합니다.
+        tableName: "users",
+        charset: "utf8", // 한글 저장이 가능하게 합니다.
+        collate: "utf8_general_ci",
+        sequelize,
+      }
+    );
+  }
+  static associate(db) {
+    db.User.hasMany(db.Post); // 사람이 여러개의 게시글을 가질 수 있습니다. (hasMany)
+    db.User.hasMany(db.Comment); // 사람이 여러개의 게시글을 가질 수 있습니다.
+    db.User.belongsToMany(db.Post, { through: "Like", as: "Liked" }); // through 는 테이블 이름을 설정, as 는 햇갈리지 않게 별칭지어주기
+    // Post 와 다대다 관계가 형성이 됩니다.
+    db.User.belongsToMany(db.User, {
+      through: "Follow",
+      as: "Followers",
+      foreignKey: "FollowingId",
+    });
+    db.User.belongsToMany(db.User, {
+      through: "Follow",
+      as: "Followings",
+      foreignKey: "FollowerId",
+    });
+    // 같은 테이블에서 다대다는 foreignKey 가 필요합니다. 왜냐면 예를 들어 팔로잉한 사람을 찾고싶으면, 먼저 팔로워 쪽에서의 자신을 찾은 다음 팔로잉을 찾는것이기 때문이죠.
+    // 그래서 foreignKey 로 Id 이름을 바꿔준다고 생각하면 됩니다.
   }
 };
 ```
 
-<br />
+- 마치 표를 자바스크립트 코드로 작성한다고 생각하시면 됩니다.
+  <br />
 
-> ** 추후 데이터 추가 **
+> **sequelize 관계설정**
+
+<p align="justify">
+위 코드의 주석으로 설명이 나와있지만, 정리해보자면, 위 예시에서도 알 수 있듯이, 한 사람이 여러 글을 작성할 수 있으며, 그렇다고 한 게시글을 여러명이서 작성할 수 있는 것은 아닙니다. 이러한 관계를 일대다 관계라 하는데, 이런식으로 각 데이터간 관계들을 표현해주어야 올바르게 프론트에게 데이터를 전달할 수 있습니다. <br /><br />
+기본적으로 시퀄라이즈에는 일대일, 일대다, 다대다 관계를 구별해주는 메서드가 있습니다.
+</p>
+
+- `belongsTo` : 속한다는 의미로 어떤 사용자에게 속해있는것입니다.
+- `hasMany` : 많이 가지고 있다는 의미입니다.
+- `belongsToMany` : 다대다 관계를 나타냅니다.
+- `Through` : 다대다 관계에서 테이블의 이름을 정해줍니다. 다대다 관계는 중간 테이블이 필요하기 때문입니다.
+- `as` : 다대다 관계의 column 을 지어줍니다.
+- `foreignKey` : 같은 테이블에 다대다 관계가 맺어지면 같은 userId 이기 때문에 이를 구별해주기 위하여 필요합니다.
+  <br />
+
+> **실제 mysql 과 연결시키기**
+
+- index.js
+
+```js
+// 생략
+// 모델들을 불러와줍니다.
+const comment = require("./comment");
+const hashtag = require("./hashtag");
+const image = require("./image");
+const post = require("./post");
+const user = require("./user");
+
+// 생략
+// db 객체안에 넣어주며
+db.Comment = comment;
+db.Hashtag = hashtag;
+db.Image = image;
+db.Post = post;
+db.User = user;
+
+// 이들을 모두 시퀄라이즈와 연결시킵니다.
+Object.keys(db).forEach((modelName) => {
+  db[modelName].init(sequelize);
+});
+
+// 생략
+```
+
+- app.js
+
+```js
+const db = require("./models");
+
+db.sequelize
+  .sync()
+  .then(() => {
+    console.log("db 연결 성공");
+  })
+  .catch(console.error);
+```
+
+<p align="justify">
+app.js 에서 설정이 끝났다면, 실제 mySQL 과 연결을 시켜주어야 합니다. 순서대로 진행합시다
+</p>
+
+- mysql server 를 실행시켜줍니다. (`mysql.server start`)
+- `mysql -u root -p` 를 통해 시작합니다.
+- 다음 vscode 로 돌아가 `npx sequelize db:create` 를 통해 연결시켜줍니다.
+- 이제 workbench 에 들어가서 확인하면 됩니다.
+- 참고로 workbench 는 추가로 설치해주면 됩니다.
+
+<br />
 
 </div>
 </details>
