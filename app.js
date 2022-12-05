@@ -34,7 +34,7 @@ app.use(
     credentials: true, // 쿠키를 서버에 전달하기 위해서 꼭 필요하다.
   })
 );
-app.use("/", express.static(path.join(__dirname, "uploads"))); // uploads 폴더를 추가해준다.
+app.use("/", express.static(path.join(__dirname, "uploads"))); // 디렉토리 폴더에 uploads 폴더를 추가해준다.
 // '/' 는 localhost:3065/ 이다. 프론트에서 이 주소로 접근할 수 있다.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
