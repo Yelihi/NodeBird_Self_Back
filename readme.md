@@ -330,7 +330,8 @@ module.exports = class User extends Model {
 ```
 
 - 마치 표를 자바스크립트 코드로 작성한다고 생각하시면 됩니다.
-  <br />
+
+<br />
 
 > **sequelize 관계설정**
 
@@ -345,7 +346,8 @@ module.exports = class User extends Model {
 - `Through` : 다대다 관계에서 테이블의 이름을 정해줍니다. 다대다 관계는 중간 테이블이 필요하기 때문입니다.
 - `as` : 다대다 관계의 column 을 지어줍니다.
 - `foreignKey` : 같은 테이블에 다대다 관계가 맺어지면 같은 userId 이기 때문에 이를 구별해주기 위하여 필요합니다.
-  <br />
+
+<br />
 
 > **실제 mysql 과 연결시키기**
 
