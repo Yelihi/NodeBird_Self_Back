@@ -198,7 +198,6 @@ module.exports = router;
 sequelize 는 MySQL 자바스크립트를 통해 관리할 수 있도록 도와줍니다.<br />
 아래와 같이 설치 후 초기 셋팅을 하겠습니다.
 </p>
-<br />
 
 ```
 npm i sequelize sequelize-cli mysql2
