@@ -145,10 +145,7 @@ router.post("/:postId/retweet", isLoggedIn, async (req, res, next) => {
       return res.status(403).send("존재하지 않는 게시글입니다.");
     }
     // 자신의 글을 리트윗 하는 경우와, 자신을 글을 누군가 리트윗 했을 때 그 리트윗글에 내가 다시 리트윗 하는겅우, 2가지 경우를 막을 것임
-    if (
-      req.user.id === post.UserId ||
-      (post.Retweet && post.Retweet.UserId === req.user.id)
-    ) {
+    if (req.user.id === post.UserId || (post.Retweet && post.Retweet.UserId === req.user.id)) {
       return res.status(403).send("자신의 글은 리트윗 할 수 없습니다.");
     }
     const retweetTargetId = post.RetweetId || post.id;
@@ -212,16 +209,65 @@ router.post("/:postId/retweet", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post(
-  "/images",
-  isLoggedIn,
-  upload.array("image"),
-  async (req, res, next) => {
-    // POST /post/images
-    console.log(req.files);
-    res.json(req.files.map((v) => v.filename));
+router.get("/:postId", async (req, res, next) => {
+  //GET post/1
+  try {
+    const post = await Post.findOne({
+      where: { id: parseInt(req.params.postId, 10) },
+    });
+    if (!post) {
+      return res.status(403).send("존재하지 않는 게시글입니다.");
+    }
+    const fullPost = await Post.findOne({
+      where: { id: post.id },
+      include: [
+        {
+          model: Post,
+          as: "Retweet",
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+            {
+              model: Image,
+            },
+          ],
+        },
+        {
+          model: User,
+          attributes: ["id", "nickname"],
+        },
+        {
+          model: Image,
+        },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+          ],
+        },
+        {
+          model: User,
+          as: "Likers",
+          attributes: ["id"],
+        },
+      ],
+    });
+    res.status(200).json(fullPost);
+  } catch (err) {
+    console.error(err);
+    next(err);
   }
-);
+});
+
+router.post("/images", isLoggedIn, upload.array("image"), async (req, res, next) => {
+  // POST /post/images
+  res.json(req.files.map((v) => v.filename));
+});
 
 router.patch("/:postId/like", isLoggedIn, async (req, res, next) => {
   // PATCH /post/1/like

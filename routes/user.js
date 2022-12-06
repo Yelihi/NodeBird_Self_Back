@@ -7,9 +7,10 @@ const router = express.Router();
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 
 router.get("/", async (req, res, next) => {
+  console.log(req.headers);
   try {
     if (req.user) {
-      const user = await User.findOne({
+      const fullUserWithoutPassword = await User.findOne({
         where: { id: req.user.id },
         attributes: {
           exclude: ["password"],
@@ -28,9 +29,49 @@ router.get("/", async (req, res, next) => {
           },
         ],
       });
-      res.status(200).json(user);
+      res.status(200).json(fullUserWithoutPassword);
     } else {
       res.status(200).json(null);
+    }
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+router.get("/:userId", async (req, res, next) => {
+  // GET /user/1
+  try {
+    const fullUserWithoutPassword = await User.findOne({
+      where: { id: req.params.userId },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: Post,
+          attributes: ["id"],
+        },
+        {
+          model: User,
+          as: "Followings",
+          attributes: ["id"],
+        },
+        {
+          model: User,
+          as: "Followers",
+          attributes: ["id"],
+        },
+      ],
+    });
+    if (fullUserWithoutPassword) {
+      const data = fullUserWithoutPassword.toJSON(); // json 으로 변경해주기
+      data.Posts = data.Posts.length; // 개인정보 보호를 위해 그냥 길이로 가져온다.
+      data.Followers = data.Followers.length; // 이렇게 안하면 포스트글을 다 가져와서 개인정보 유출이 될 수 있다.
+      data.Followings = data.Followings.length;
+      res.status(200).json(data);
+    } else {
+      res.status(404).send("존재하지 않는 사용자입니다.");
     }
   } catch (err) {
     console.error(err);
