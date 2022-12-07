@@ -508,58 +508,37 @@ bcrypt.compare(myPlaintextPassword, hash).then(function (result) {
 </details>
 
 <details>
-<summary><b>useInput</b></summary>
+<summary><b>CORS 문제와 해결책</b></summary>
 <div markdown="1">
 <br />
 
-> **useInput**
+> **CORS(Cross Origin Resource Sharing)**
 
 <p align="justify">
-Form 양식을 작업하다보면 수많은 input 창이 나오게 되고 그때마다 반복되는 함수를 사용하기에는 번거로운 점이 있습니다.<br />
-그래서 이전에는 하나의 state 에 여러개의 value 를 객체 형식으로 관리하였는데, 이번에 커스텀 훅을 사용하여 좀 더 깔끔한 코드로 작성하고자 하였습니다.
+CORS(Cross Origin Resource Sharing) 정책은 우리가 사용하는 리소스들이 안전한지 검사하는 브라우저의 방화벽과 같은 역할을 한다 생각하면 됩니다. 여기서 출처(Origin)은 URL 부분에 있어 프로토콜 + 호스트 + 포트 부분으로 이해하면 된다. 
+<br />
+해결 방법으로는 proxy 방법이 있고, 직접 서버측에서 처리하는 방법이 있는데 지금은 서버측에서 처리하는 방법을 활용하겠습니다. 자세한 설명은 아래 블로그 링크를 참고하시면 됩니다.
 <br />
 </p>
+
+[CORS 정책에 대하여](https://rock7246.tistory.com/56)
+
+<p align="justify">
+미들웨어 cors 를 활용하여 해결이 가능합니다.
 <br />
+</p>
 
-- useInput.js
-
-```js
-import { useState, useCallback } from "react";
-
-export default (initialValue = null) => {
-  const [value, setValue] = useState(initialValue);
-  const handler = useCallback((e) => {
-    setValue(e.target.value);
-  }, []);
-  return [value, handler];
-};
+```
+npm i cors
 ```
 
-- return 부분이 중요한데, 초기 상태값과, handler 함수를 반환하게 됩니다. 이 함수를 그대로 활용할 수 있게 됩니다.
-  <br />
-
 ```js
-import useInput from "../hooks/useInput";
-
-const LoginForm = ({ setIsLoggedIn }) => {
-  const [id, onChangeId] = useInput("");
-  const [password, onChangePassword] = useInput("");
-```
-
-- 이런식으로 상태값과 함수를 구조분해로 마치 useState 를 사용하듯이 사용하면 됩니다.
-- 만일 setState 가 필요해지는 경우가 발생한다면, 간단하게 커스텀훅으로 돌아가 return 부분에 setState 를 같이 반환하게 하면 됩니다.
-  <br />
-
-```js
-import { useState, useCallback } from "react";
-
-export default (initialValue = null) => {
-  const [value, setValue] = useState(initialValue);
-  const handler = useCallback((e) => {
-    setValue(e.target.value);
-  }, []);
-  return [value, handler, setValue];
-};
+app.use(
+  cors({
+    origin: true, // 요청하는 브라우저의 포트를 자동으로 설정해줍니다.
+    credentials: true, // 쿠키를 서버에 전달하기 위해서 꼭 필요합니다.
+  })
+);
 ```
 
 </div>
