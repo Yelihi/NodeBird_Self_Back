@@ -407,106 +407,102 @@ app.js 에서 설정이 끝났다면, 실제 mySQL 과 연결을 시켜주어야
 </details>
 
 <details>
-<summary><b>antd</b></summary>
+<summary><b>비밀번호 암호화를 위한 bycript</b></summary>
 <div markdown="1">
 <br />
 
-> **antd**
+> **bycript**
 
 <p align="justify">
-antd를 통해서 좀 더 쉽게 페이지의 레이아웃을 설정할 수 있습니다.<br />
-간단한 메뉴부터, nav, login form, layout 등등 공식 홈페이지를 참고하여 양식에 맞게 적용하면 됩니다. 전반적으로 미리 디자인이 깔끔하게 되어있지만, 수정이 필요하다면 사용자에 성향에 맞게 수정이 가능합니다. 여기선 version 4 를 사용하였습니다. 최근 버전에는 사용법이 약간 달라진 부분이 있으니 항상 공식 문서를 우선적으로 참조합시다.
+비밀번호를 저장할 때 해킹의 위험에 대비하여 암호화를 할 필요가 있습니다. 이에 해시 메커니즘을 이용한 암호화를 해주는 bcrypt 를 사용하겠습니다.
+<br />
+bcrypt 는 패스워드를 해싱할 때 내부적으로 랜던한 salt 를 생성하기 때문에 같은 문자열에 대해서 매번 다른 해싱결과를 반환합니다. (단 길이는 동일합니다.) salt 값이 통합된 형식이기에, 변환 가능한 해시 값을 저장해놓은 표인 레인보 테이블만으로는 암호를 해킹할 수 없게 됩니다.
 <br />
 </p>
-<br />
 
 ```
-npm i antd@4
-npm i @ant-design/icons
+npm i bcyript
 ```
 
-<br />
-<p align='justify'> `@ant-design/icons` 도 설치해두면 아이콘을 설정할 때 아주 유용합니다. 같이 설치합시다. </p>
+<p align='justify'> 회원가입을 하기 위하여, 사용자가 입력창에 아이디와 패스워드를 입력하여 서버에 전송하였다고 가정하겠습니다. 이렇게 되면 action 을 통해 백엔드 서버로 데이터가 전송이 되고, 이 때 기입한 암호가 그대로 전달이 됩니다. 이 암호를 해시화하여 암호화 하여야 합니다. 회원가입 과정을 코드로 나타내보겠습니다. </p>
 <br />
 
-> 예제 (AppLayout)
+> 예제 (회원가입)
 
 ```js
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import PropTypes from "prop-types";
-import Link from "next/link";
-// 이렇게 import 에서 사용할 수 있다.
-import { Menu, Input, Row, Col } from "antd";
+const express = require("express");
+// bcrypt 를 import 해줍니다.
+const bcrypt = require("bcrypt");
+const { User } = require("../models");
+const router = express.Router();
 
-import UserProfile from "./UserProfile";
-import LoginForm from "./LoginForm";
-import styled from "styled-components";
+// /post 주소로 data와 함께 보낼 시, 회원가입이 진행이 됩니다.
+router.post("/", async (req, res) => {
+  try {
+    const exUser = await User.findOne({
+      // 우선 지금 기입한 정보로 된 유저가 기존에 존재하는지 부터 확인하겠습니다.
+      where: {
+        // 기입한 이메일
+        email: req.body.email,
+      },
+    });
+    // 또한 기입한 닉네임이 존재하는지도 확인하겠습니다.
+    const exNickName = await User.findOne({
+      where: {
+        nickname: req.body.nickname,
+      },
+    });
+    // 이메일이 존재한다면 에러메세지를 송부합니다.
+    if (exUser) {
+      return res.status(403).send("이미 사용중인 아이디입니다."); // return 안붙이면 밑에 코드도 실행되어 버리니 주의합시다.
+    }
+    // 닉네임 역시 존재한다면 에러메세지를 송부합니다.
+    if (exNickName) {
+      return res.status(403).send("이미 사용중인 닉네임입니다."); // 하나의 요청에 하나의 응답을 해주어야 합니다.
+    }
+    // 이제 받은 패스워드를 암호화 하는 과정입니다.
+    // 뒤 숫자는 생성되는 salt 의 길이입니다.
+    const hashedPassword = await bcrypt.hash(req.body.password, 13);
+    // promise 를 활용하였기에 이러한 문법으로 작성했습니다.
+    // 유저를 생성합니다.
+    await User.create({
+      email: req.body.email, // req.body == data == action.data
+      nickname: req.body.nickname,
+      password: hashedPassword,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error); // error 들이 express 가 브라우저에게 이런 에러 났다고 얘기해줌. status 500 에러
+  }
+  // 생성이 성공적이라면 ok 를 보내줍니다.
+  res.status(200).send("ok");
+}); // /user
 
-const AppLayout = ({ children }) => {
-  const { me } = useSelector((state) => state.user);
-  return (
-    <div>
-      <Menu mode="horizontal">
-        <Menu.Item>
-          <Link href="/">
-            <a>노드버드</a>
-          </Link>
-        </Menu.Item>
-        <Menu.Item>
-          <Link href="/profile">
-            <a>프로필</a>
-          </Link>
-        </Menu.Item>
-        <Menu.Item>
-          <SearchInput
-            placeholder="input search text"
-            enterButton
-            style={{
-              width: 300,
-              verticalAlign: "middle",
-            }}
-          />
-        </Menu.Item>
-        <Menu.Item>
-          <Link href="/signup">
-            <a>회원가입</a>
-          </Link>
-        </Menu.Item>
-      </Menu>
-      <Row gutter={8}>
-        <Col xs={24} md={6}>
-          {me ? <UserProfile /> : <LoginForm />}
-        </Col>
-        <Col xs={24} md={12}>
-          {children}
-        </Col>
-        <Col xs={24} md={6}>
-          <a href="https://rock7246.tistory.com" target="_blank" rel="noreferrer noopenner">
-            By Yelihi
-          </a>
-        </Col>
-      </Row>
-    </div>
-  );
-};
-AppLayout.prototype = {
-  children: PropTypes.node.isRequired,
-};
+module.exports = router;
+```
 
-export default AppLayout;
+<p align='justify'>현재 기본적으로 사용한 방법은 공식 문서에 적혀있는 promise 를 활용한 hash 화 방법입니다.</p>
 
-// 기존 스타일을 변경할 때 styled-component 를 활용해도 되고, 아니면 그냥 인라인으로 수정해도 된다.
-const SearchInput = styled(Input.Search)`
-  vertical-align: middle;
-`;
+```js
+bcrypt.hash(myPlaintextPassword, saltRounds).then(function (hash) {
+  // Store hash in your password DB.
+});
+```
+
+<p align='justify'>패스워드를 load 하는 방법은 아래와 같습니다.</p>
+
+```js
+// Load hash from your password DB.
+bcrypt.compare(myPlaintextPassword, hash).then(function (result) {
+  // result == true
+});
 ```
 
 <br />
 <p align='justify'>각 요소들의 사용법은 공식 문서를 활용하도록 합시다</p>
 </br>
 
-[공식 사이트](https://ant.design/)
+[공식 문서](https://www.npmjs.com/package/bcrypt)
 
 </div>
 </details>
