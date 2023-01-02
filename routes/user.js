@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const passport = require("passport");
-const { User, Post } = require("../models");
+const { User, Post, Image, Comment } = require("../models");
 const router = express.Router();
 
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
@@ -169,6 +169,65 @@ router.post("/", isNotLoggedIn, async (req, res) => {
     next(error); // error 들이 express 가 브라우저에게 이런 에러 났다고 얘기해줌. status 500 에러
   }
 }); // /user
+
+router.get("/:userId/posts", async (req, res, next) => {
+  try {
+    let where = { UserId: req.params.userId };
+    if (parseInt(req.query.lastId, 10)) {
+      // 초기 로딩이 아닐때
+      where.id = { [Op.lt]: parseInt(req.query.lastId, 10) }; // lastId 보다 작은 거 10개를 가져온다.
+    }
+    const posts = await Post.findAll({
+      // 모든 게시글을 가져온다.
+      where, // 페이지네이션 구현할 때, lastId 는 고정이기에 게시글 수정 삭제 추가 할 때도 관계없이 고정이다.
+      limit: 10, // offset : 0~ 10 까지 가져와라, 즉 시작점을 말해준다. 근데 실무에서는 잘 안쓴다.
+      order: [
+        ["createdAt", "DESC"], // 최신 게시물
+        [Comment, "createdAt", "DESC"],
+      ], // 최신 댓글부터 가져온다.
+      include: [
+        {
+          model: Post,
+          as: "Retweet",
+          include: [
+            {
+              model: User,
+              attributes: ["id", "nickname"],
+            },
+            {
+              model: Image,
+            },
+          ],
+        },
+        {
+          model: User, // 게시글 작성자
+          attributes: ["id", "nickname"],
+        },
+        {
+          model: Image,
+        },
+        {
+          model: Comment,
+          include: [
+            {
+              model: User, // 댓글 작성자
+              attributes: ["id", "nickname"],
+            },
+          ],
+        },
+        {
+          model: User, // 좋아요 누른 사람
+          as: "Likers",
+          attributes: ["id"],
+        },
+      ],
+    });
+    res.status(200).json(posts);
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+}); // GET / posts
 
 // 닉네임 수정하기
 router.patch("/nickname", isLoggedIn, async (req, res, next) => {
